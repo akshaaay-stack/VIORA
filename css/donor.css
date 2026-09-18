@@ -1,0 +1,299 @@
+/* VIORA DONOR DASHBOARD & ALERTS */
+.donor-hero-card {
+  text-align: center;
+  padding: 36px 24px;
+  background: #FFFFFF;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+.avail-badge-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.avail-circle {
+  width: 124px;
+  height: 124px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 250ms ease;
+}
+
+.avail-circle.available {
+  border: 4px solid var(--success);
+  background: radial-gradient(circle, #FFFFFF 65%, var(--success-light) 100%);
+  animation: availableGreenGlow 2.5s infinite ease-in-out;
+}
+
+.avail-circle.resting {
+  border: 4px solid var(--border);
+  background: #F8F9FA;
+  box-shadow: none;
+}
+
+.avail-blood-group {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--primary);
+  margin-bottom: 2px;
+}
+
+.avail-status-tag {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.avail-circle.available .avail-status-tag { color: var(--success); }
+.avail-circle.resting .avail-status-tag { color: var(--text-muted); }
+
+.hero-toggle-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.toggle-switch-container {
+  position: relative;
+  display: inline-block;
+  width: 88px;
+  height: 46px;
+  cursor: pointer;
+}
+
+.toggle-switch-container input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #D1D5DB;
+  transition: background-color 250ms ease;
+  border-radius: 9999px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 38px;
+  width: 38px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 250ms ease;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.toggle-switch-container input:checked + .toggle-slider {
+  background-color: var(--success);
+}
+
+.toggle-switch-container input:checked + .toggle-slider:before {
+  transform: translateX(42px);
+}
+
+.toggle-label-text {
+  font-size: 16px;
+  font-weight: 700;
+  transition: color 250ms ease;
+}
+
+.donor-stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: #FFFFFF;
+  border-radius: var(--radius-card);
+  padding: 22px 18px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 220ms ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--secondary);
+}
+
+.cooldown-ring-box {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cooldown-svg {
+  width: 64px;
+  height: 64px;
+  transform: rotate(-90deg);
+}
+
+.cooldown-bg-circle {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 5;
+}
+
+.cooldown-fg-circle {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 800ms ease;
+}
+
+.cooldown-center-val {
+  position: absolute;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--secondary);
+  text-align: center;
+}
+
+.trust-score-badge {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--secondary-light);
+  border: 3px solid var(--secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 220ms ease;
+}
+
+.trust-val {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--secondary);
+  line-height: 1;
+}
+
+.trust-sub {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--secondary);
+  text-transform: uppercase;
+}
+
+.incoming-match-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(30, 39, 97, 0.78);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 250ms ease;
+}
+
+.incoming-match-modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.incoming-match-card {
+  background: #FFFFFF;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: var(--shadow-modal);
+  padding: 32px 28px;
+  text-align: center;
+  position: relative;
+  transform: translateY(20px);
+  transition: transform 250ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.incoming-match-modal-overlay.active .incoming-match-card {
+  transform: translateY(0);
+}
+
+.match-urgency-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.match-urgency-pill.urgent {
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+  animation: urgentBadgePulse 1.8s infinite ease-in-out;
+}
+
+.match-urgency-pill.normal {
+  background: var(--secondary-light);
+  color: var(--secondary);
+  border: 1.5px solid var(--secondary);
+}
+
+.match-info-box {
+  background: var(--bg-page);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  margin: 20px 0;
+  text-align: left;
+}
+
+.match-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.match-info-row:last-child {
+  margin-bottom: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.match-action-buttons {
+  display: flex;
+  gap: 14px;
+  margin-top: 24px;
+}

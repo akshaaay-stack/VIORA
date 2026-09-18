@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Viora — Privacy-First Blood Donor Matching for Kerala</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/donor.css">
+  <link rel="stylesheet" href="css/requester.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="js/kerala-data.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+
+  <!-- App Header / Navigation -->
+  <header class="app-navbar">
+    <div class="container-wide nav-flex">
+      <a href="index.html" class="brand-wrapper">
+        <div class="brand-icon">🩸</div>
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="brand-title">Viora</span>
+            <span class="brand-tag">KERALA</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- View Selector / Demo Mode Tabs -->
+      <nav class="nav-pills" id="navTabs">
+        <button class="nav-tab-btn active" data-mode="split">⚡ Dual Demo Simulator</button>
+        <button class="nav-tab-btn" data-mode="requester">🚨 Emergency Requester</button>
+        <button class="nav-tab-btn" data-mode="donor">❤️ Donor Hub</button>
+        <button class="nav-tab-btn" data-mode="signup">🛡️ Register as Donor</button>
+      </nav>
+
+      <div>
+        <button id="cfgBtn" class="btn btn-outline-navy" style="padding: 6px 14px; font-size: 13px;" onclick="document.getElementById('configModal').classList.add('active')">
+          ⚙️ Supabase
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="container-wide" style="padding-top: 24px; padding-bottom: 40px; flex: 1;">
+
+    <!-- ============================================================== -->
+    <!-- VIEW 1: DUAL SIMULATOR (SPLIT SCREEN FOR JUDGES) -->
+    <!-- ============================================================== -->
+    <div id="splitView" class="split-grid screen-transition">
+      
+      <!-- LEFT PANE: REQUESTER RADAR FLOW -->
+      <div class="pane-column">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span class="badge-pill badge-cherry">Persona 1: Hospital Requester</span>
+          <span style="font-size: 13px; color: var(--text-muted);">Step 1: Dispatch Emergency</span>
+        </div>
+
+        <!-- REQUESTER FORM CARD -->
+        <div id="requestFormCard" class="card">
+          <h2 style="margin-bottom: 6px;">Find Blood Donors</h2>
+          <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">
+            Wave 1 automatically dispatches to the 3 nearest eligible donors in your locality.
+          </p>
+
+          <form id="bloodRequestForm">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+              <div class="form-group">
+                <label class="form-label" for="reqName">Patient / Requester Name *</label>
+                <input type="text" id="reqName" class="form-control" value="Rahul Kumar" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="reqPhone">Phone Number *</label>
+                <input type="tel" id="reqPhone" class="form-control" value="+91 98479 99888" required>
+              </div>
+            </div>
+
+            <!-- 8-Blood Group Grid Selector -->
+            <div class="form-group">
+              <label class="form-label">Blood Group Needed *</label>
+              <div class="blood-grid">
+                <div class="blood-pill blood-pill-req selected active" data-bg="O+">O+</div>
+                <div class="blood-pill blood-pill-req" data-bg="O-">O-</div>
+                <div class="blood-pill blood-pill-req" data-bg="A+">A+</div>
+                <div class="blood-pill blood-pill-req" data-bg="A-">A-</div>
+                <div class="blood-pill blood-pill-req" data-bg="B+">B+</div>
+                <div class="blood-pill blood-pill-req" data-bg="B-">B-</div>
+                <div class="blood-pill blood-pill-req" data-bg="AB+">AB+</div>
+                <div class="blood-pill blood-pill-req" data-bg="AB-">AB-</div>
+              </div>
+            </div>
+
+            <!-- Kerala Cascading Dropdowns -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+              <div class="form-group">
+                <label class="form-label" for="reqDistrict">District in Kerala *</label>
+                <select id="reqDistrict" class="form-control" required></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="reqLocality">Locality / Area *</label>
+                <select id="reqLocality" class="form-control" required></select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="reqHospital">Hospital / Blood Bank *</label>
+              <select id="reqHospital" class="form-control" required></select>
+            </div>
+
+            <!-- Urgency Cards -->
+            <div class="form-group">
+              <label class="form-label">Urgency Level *</label>
+              <div class="urgency-grid">
+                <div id="urgencyCardUrgent" class="urgency-card active-urgent">
+                  <div style="font-size: 22px; margin-bottom: 4px;">🚨</div>
+                  <strong style="color: var(--primary); font-size: 15px;">Emergency Urgent</strong>
+                  <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Immediate transfusion</div>
+                </div>
+                <div id="urgencyCardNormal" class="urgency-card">
+                  <div style="font-size: 22px; margin-bottom: 4px;">⏱️</div>
+                  <strong style="color: var(--secondary); font-size: 15px;">Standard Need</strong>
+                  <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Within 24 hours</div>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" style="padding: 14px; font-size: 16px;">
+              ⚡ Launch Wave 1 Escalation Search
+            </button>
+          </form>
+        </div>
+
+        <!-- LIVE RADAR SCREEN (Initially Hidden) -->
+        <div id="liveRadarSection" style="display: none;">
+          <div id="radarDisplayCard" class="card" style="text-align: center;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 20px;">
+              <div>
+                <span class="badge-pill badge-cherry">🚨 EMERGENCY RADAR ACTIVE</span>
+                <div id="radarHospitalText" style="font-size: 14px; font-weight: 700; color: var(--secondary); margin-top: 4px;">Aster Medcity, Kakkanad</div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase;">Blood Group</div>
+                <strong style="font-size: 24px; color: var(--primary);">O+</strong>
+              </div>
+            </div>
+
+            <!-- Concentric Escalation Rings -->
+            <div class="radar-concentric-container">
+              <div id="waveRing3" class="concentric-ring ring-3"></div>
+              <div id="waveRing2" class="concentric-ring ring-2"></div>
+              <div id="waveRing1" class="concentric-ring ring-1 active-cherry"></div>
+              <div class="radar-center-core">🩸</div>
+            </div>
+
+            <h3 id="waveStatusTitle" style="color: var(--secondary); margin-bottom: 4px;">Wave 1: Alerting 3 Nearest Local Donors</h3>
+            <p id="waveDescription" style="font-size: 13px; color: var(--text-muted); max-width: 440px; margin: 0 auto 16px;">
+              Restricted to Kakkanad locality to prevent donor fatigue.
+            </p>
+
+            <div class="wave-steps-row">
+              <div id="waveStepBadge1" class="wave-step-pill active">● Wave 1 (Locality)</div>
+              <div id="waveStepBadge2" class="wave-step-pill">○ Wave 2 (Adjacent)</div>
+              <div id="waveStepBadge3" class="wave-step-pill">○ Wave 3 (District)</div>
+            </div>
+
+            <div id="waveCountdownDisplay" style="font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 16px;">
+              Auto-widening to Wave 2 in 05:00
+            </div>
+
+            <button id="manualWidenBtn" class="btn btn-outline-navy" style="font-size: 13px; padding: 8px 18px;">
+              ⚡ Widen Search Radius Now
+            </button>
+
+            <!-- Masked Donors Carousel -->
+            <div style="border-top: 1px solid var(--border); padding-top: 18px; margin-top: 20px; text-align: left;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h4 style="color: var(--secondary);">🛡️ Masked Eligible Donors Notified</h4>
+                <span style="font-size: 12px; color: var(--success); font-weight: 700;">Zero-Leakage View</span>
+              </div>
+              <div id="maskedDonorsList" class="masked-donors-carousel"></div>
+            </div>
+          </div>
+
+          <!-- Contact Revealed Container -->
+          <div id="matchRevealedContainer" style="display: none;"></div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT PANE: DONOR HUB & INCOMING ALERT -->
+      <div class="pane-column">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span class="badge-pill badge-navy">Persona 2: Registered Hero Donor</span>
+          <span style="font-size: 13px; color: var(--text-muted);">Live Standby Dashboard</span>
+        </div>
+
+        <!-- DONOR HERO DASHBOARD -->
+        <div class="donor-hero-card">
+          <!-- Large Circular Availability Badge -->
+          <div class="avail-badge-wrapper">
+            <div id="availCircleBadge" class="avail-circle available">
+              <div id="donorBloodDisplay" class="avail-blood-group">O+</div>
+              <span id="availStatusTag" class="avail-status-tag">Available</span>
+            </div>
+          </div>
+
+          <h2 id="donorNameDisplay" style="margin-bottom: 2px;">Arjun Nair</h2>
+          <p id="donorLocDisplay" style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">Kakkanad, Ernakulam</p>
+
+          <!-- Pill Availability Toggle Switch -->
+          <div class="hero-toggle-section">
+            <label class="toggle-switch-container">
+              <input type="checkbox" id="availabilityToggle" checked>
+              <span class="toggle-slider"></span>
+            </label>
+            <span id="toggleStatusLabel" class="toggle-label-text" style="color: var(--success);">
+              Available for Urgent Requests
+            </span>
+          </div>
+        </div>
+
+        <!-- Stats Grid: 90-Day Cooldown & Trust Score -->
+        <div class="donor-stats-row">
+          <!-- Cooldown Ring Card -->
+          <div class="stat-card">
+            <div class="cooldown-ring-box">
+              <svg class="cooldown-svg" viewBox="0 0 60 60">
+                <circle class="cooldown-bg-circle" cx="30" cy="30" r="25"></circle>
+                <circle id="cooldownFgCircle" class="cooldown-fg-circle" cx="30" cy="30" r="25"></circle>
+              </svg>
+              <div id="cooldownDaysText" class="cooldown-center-val">Ready</div>
+            </div>
+            <div>
+              <h4 style="margin-bottom: 2px;">90-Day Cooldown</h4>
+              <p id="cooldownSubtitle" style="font-size: 12px; color: var(--text-muted);">Safe medical window</p>
+            </div>
+          </div>
+
+          <!-- Trust Score Card -->
+          <div class="stat-card" id="trustScoreCard">
+            <div class="trust-score-badge">
+              <span id="donorTrustScoreVal" class="trust-val">96</span>
+              <span class="trust-sub">Score</span>
+            </div>
+            <div>
+              <h4 style="margin-bottom: 2px;">Trust Score ⭐</h4>
+              <p style="font-size: 12px; color: var(--text-muted);">Tap for breakdown</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulation Trigger Button -->
+        <div class="card" style="text-align: center; padding: 20px;">
+          <h4 style="color: var(--secondary); margin-bottom: 6px;">🧪 Hackathon Live Broadcast Simulation</h4>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+            Simulate an emergency hospital broadcast directly to this donor.
+          </p>
+          <button id="demoTriggerMatchBtn" class="btn btn-outline-cherry" style="font-size: 14px; padding: 10px 22px;">
+            ⚡ Simulate Incoming Match Alert
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 2: STANDALONE REQUESTER VIEW -->
+    <!-- ============================================================== -->
+    <div id="requesterStandaloneView" style="display: none;" class="container-narrow screen-transition">
+      <!-- (Mirrors Requester Form) -->
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 3: STANDALONE DONOR VIEW -->
+    <!-- ============================================================== -->
+    <div id="donorStandaloneView" style="display: none;" class="container-narrow screen-transition">
+      <!-- (Mirrors Donor Hub) -->
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 4: DONOR SIGNUP WIZARD & OTP -->
+    <!-- ============================================================== -->
+    <div id="signupStandaloneView" style="display: none;" class="container-narrow screen-transition">
+      <div class="card" style="text-align: center;">
+        <span class="badge-pill badge-navy" style="margin-bottom: 12px;">Donor Protection Shield</span>
+        <h2 style="margin-bottom: 6px;">Register as a Hero Donor</h2>
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 24px;">
+          Your phone number is locked by RLS and never shared unless you click "I Can Help".
+        </p>
+
+        <!-- 4 Progress Dots -->
+        <div class="progress-dots-container">
+          <div id="stepDot1" class="progress-dot active"></div>
+          <div id="stepDot2" class="progress-dot"></div>
+          <div id="stepDot3" class="progress-dot"></div>
+          <div id="stepDot4" class="progress-dot"></div>
+        </div>
+
+        <!-- Step 1: Personal Details -->
+        <div id="signupStep1" class="screen-transition">
+          <div class="form-group">
+            <label class="form-label" for="signupName">Full Name *</label>
+            <input type="text" id="signupName" class="form-control" placeholder="e.g. Fathima Zahra" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="signupPhone">Mobile Number (Kerala / India) *</label>
+            <input type="tel" id="signupPhone" class="form-control" placeholder="e.g. 98470 12345" required>
+            <div class="form-hint">We will verify with a 6-digit dev-mode OTP.</div>
+          </div>
+        </div>
+
+        <!-- Step 2: Blood Group Grid -->
+        <div id="signupStep2" style="display: none;" class="screen-transition">
+          <div class="form-group">
+            <label class="form-label">Select Your Blood Group *</label>
+            <div class="blood-grid">
+              <div class="blood-pill blood-pill-signup selected active" data-bg="O+">O+</div>
+              <div class="blood-pill blood-pill-signup" data-bg="O-">O-</div>
+              <div class="blood-pill blood-pill-signup" data-bg="A+">A+</div>
+              <div class="blood-pill blood-pill-signup" data-bg="A-">A-</div>
+              <div class="blood-pill blood-pill-signup" data-bg="B+">B+</div>
+              <div class="blood-pill blood-pill-signup" data-bg="B-">B-</div>
+              <div class="blood-pill blood-pill-signup" data-bg="AB+">AB+</div>
+              <div class="blood-pill blood-pill-signup" data-bg="AB-">AB-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Kerala Location -->
+        <div id="signupStep3" style="display: none;" class="screen-transition">
+          <div class="form-group">
+            <label class="form-label" for="signupDistrict">District *</label>
+            <select id="signupDistrict" class="form-control" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="signupLocality">Locality / Town *</label>
+            <select id="signupLocality" class="form-control" required></select>
+          </div>
+        </div>
+
+        <!-- Step 4: Cooldown & OTP Verification -->
+        <div id="signupStep4" style="display: none;" class="screen-transition">
+          <div class="form-group">
+            <label class="form-label" for="signupLastDonation">Last Blood Donation Date (Optional)</label>
+            <input type="date" id="signupLastDonation" class="form-control">
+            <div class="form-hint">Used strictly for your 90-day recovery window.</div>
+          </div>
+
+          <!-- Dev-Mode Visible Code Banner -->
+          <div class="dev-otp-banner">
+            <span>DEV MODE — Verification Code:</span>
+            <span id="devOtpCodeDisplay" class="dev-otp-code">------</span>
+          </div>
+
+          <!-- 6-Box Auto-Advancing Inputs -->
+          <div class="otp-box-grid">
+            <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
+            <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
+            <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
+            <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
+            <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
+            <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
+          </div>
+
+          <div id="otpStatusMsg" style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+            Enter 6-digit code
+          </div>
+
+          <button id="resendOtpBtn" class="btn btn-outline-navy" style="font-size: 13px; padding: 6px 16px;">
+            🔄 Resend Code
+          </button>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div style="display: flex; justify-content: space-between; margin-top: 24px;">
+          <button id="signupPrevBtn" class="btn btn-outline-navy" style="display: none;">
+            ← Back
+          </button>
+          <button id="signupNextBtn" class="btn btn-primary" style="margin-left: auto;">
+            Continue →
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: FULL-SCREEN INCOMING MATCH ALERT (DONOR SIDE) -->
+  <!-- ============================================================== -->
+  <div id="incomingMatchModalOverlay" class="incoming-match-modal-overlay">
+    <div class="incoming-match-card">
+      <div id="matchUrgencyBadge" class="match-urgency-pill urgent">
+        🚨 EMERGENCY URGENT
+      </div>
+      <h2 style="color: var(--secondary); margin-bottom: 4px;">Immediate Blood Need</h2>
+      <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 18px;">
+        You were matched in Wave 1 as the closest eligible verified donor.
+      </p>
+
+      <div class="match-info-box">
+        <div class="match-info-row">
+          <div>
+            <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase;">Blood Needed</div>
+            <strong id="matchBloodNeeded" style="font-size: 26px; color: var(--primary);">O+</strong>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase;">Proximity</div>
+            <strong id="matchLocality" style="font-size: 16px; color: var(--secondary);">Kakkanad (2.4 km)</strong>
+          </div>
+        </div>
+        <div class="match-info-row">
+          <div>
+            <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase;">Hospital Destination</div>
+            <strong id="matchHospitalName" style="font-size: 15px; color: var(--secondary);">Aster Medcity, Cheranalloor</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="match-action-buttons">
+        <button id="acceptMatchBtn" class="btn btn-primary btn-block" style="padding: 14px; font-size: 16px;">
+          ❤️ I Can Help
+        </button>
+        <button id="declineMatchBtn" class="btn btn-outline-navy btn-block" style="padding: 14px; font-size: 16px;">
+          Not This Time
+        </button>
+      </div>
+
+      <p style="font-size: 12px; color: var(--text-light); margin-top: 16px;">
+        Clicking "I Can Help" securely unlocks your contact to the hospital dispatch team.
+      </p>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: SATISFYING UNLOCK MICRO-INTERACTION -->
+  <!-- ============================================================== -->
+  <div id="unlockAnimationModal" class="incoming-match-modal-overlay">
+    <div class="incoming-match-card" style="max-width: 400px;">
+      <div class="unlock-animation-wrapper unlock-spring">
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+          <path class="checkmark-svg-path" d="M10 23L18 31L34 13" stroke="var(--success)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3 style="color: var(--secondary); margin-bottom: 6px;">Identity Verified</h3>
+      <p style="font-size: 14px; color: var(--text-muted);">
+        Welcome to Viora, <strong id="unlockModalDonorName">Donor</strong>! Your privacy shield is active.
+      </p>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: TRUST SCORE BREAKDOWN -->
+  <!-- ============================================================== -->
+  <div id="trustScoreModal" class="incoming-match-modal-overlay">
+    <div class="incoming-match-card" style="max-width: 440px; text-align: left;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="color: var(--secondary);">⭐ Trust Score Breakdown</h3>
+        <button onclick="window.VioraApp.closeTrustScoreModal()" style="border: none; background: transparent; font-size: 20px; cursor: pointer;">✕</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+        Trust scores rank eligible donors to maximize response rate without revealing identities.
+      </p>
+
+      <div style="background: var(--bg-page); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px;">
+          <span>✓ Phone Verification</span>
+          <strong style="color: var(--success);">+40 pts (Verified)</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px;">
+          <span>✓ Response Rate (98%)</span>
+          <strong style="color: var(--success);">+35 pts</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px;">
+          <span>✓ Safe 90-Day Cooldown</span>
+          <strong style="color: var(--success);">+15 pts</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 14px; border-top: 1px solid var(--border); padding-top: 10px;">
+          <span>✓ Account Age (4 mos)</span>
+          <strong style="color: var(--success);">+6 pts</strong>
+        </div>
+      </div>
+
+      <div style="text-align: right;">
+        <button onclick="window.VioraApp.closeTrustScoreModal()" class="btn btn-primary" style="padding: 8px 22px;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: SUPABASE CONFIGURATION -->
+  <!-- ============================================================== -->
+  <div id="configModal" class="incoming-match-modal-overlay">
+    <div class="incoming-match-card" style="max-width: 480px; text-align: left;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="color: var(--secondary);">⚙️ Supabase Integration</h3>
+        <button onclick="document.getElementById('configModal').classList.remove('active')" style="border: none; background: transparent; font-size: 20px; cursor: pointer;">✕</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+        Directly connected to project <strong>VIORA</strong> (<code>jpultvoodifhjqmbsjvh</code>).
+      </p>
+
+      <div class="form-group">
+        <label class="form-label">Supabase URL</label>
+        <input type="text" id="cfgUrl" class="form-control" value="https://jpultvoodifhjqmbsjvh.supabase.co">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Anon Public Key</label>
+        <input type="password" id="cfgKey" class="form-control" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwdWx0dm9vZGlmaGpxbWJzanZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2NTQ4MTcsImV4cCI6MjEwNTIzMDgxN30.xnGN2RbFYl2HHj583swTzU83GdOr9oHNO2EMPYjY6sk">
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button onclick="window.VIORA_CONFIG.saveKeys(document.getElementById('cfgUrl').value, document.getElementById('cfgKey').value)" class="btn btn-primary" style="flex: 1;">Save & Reconnect</button>
+        <button onclick="document.getElementById('configModal').classList.remove('active')" class="btn btn-outline-navy" style="flex: 1;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="container-wide">
+      Viora &copy; 2026 — Built for Kerala Hackathon Selection Round. Privacy-First Medical Trust Blood Network.
+    </div>
+  </footer>
+
+</body>
+</html>

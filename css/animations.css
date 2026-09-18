@@ -1,0 +1,74 @@
+/* VIORA ANIMATIONS & MICRO-INTERACTIONS */
+@keyframes availableGreenGlow {
+  0% { box-shadow: 0 0 0 0 rgba(31, 110, 67, 0.45); }
+  70% { box-shadow: 0 0 0 18px rgba(31, 110, 67, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(31, 110, 67, 0); }
+}
+
+@keyframes wavePulseCherry {
+  0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(153, 0, 17, 0.4); }
+  70% { transform: scale(1.04); box-shadow: 0 0 0 20px rgba(153, 0, 17, 0); }
+  100% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(153, 0, 17, 0); }
+}
+
+@keyframes urgentBorderPulse {
+  0% { border-color: rgba(153, 0, 17, 0.4); box-shadow: 0 0 0 0 rgba(153, 0, 17, 0.25); }
+  50% { border-color: rgba(153, 0, 17, 1); box-shadow: 0 0 0 6px rgba(153, 0, 17, 0.15); }
+  100% { border-color: rgba(153, 0, 17, 0.4); box-shadow: 0 0 0 0 rgba(153, 0, 17, 0.25); }
+}
+
+@keyframes urgentBadgePulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.06); opacity: 0.9; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes otpShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+}
+
+.shake-error {
+  animation: otpShake 0.4s ease-in-out !important;
+  border-color: var(--primary) !important;
+  background-color: #FFF0F0 !important;
+}
+
+@keyframes lockShackleOpen {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(-8px) rotate(-28deg); transform-origin: left top; }
+}
+
+@keyframes checkmarkDraw {
+  0% { stroke-dashoffset: 60; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes scaleUpSpring {
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.unlock-spring {
+  animation: scaleUpSpring 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.checkmark-svg-path {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: checkmarkDraw 0.6s 0.2s ease forwards;
+}
+
+.screen-transition {
+  animation: screenFadeSlide 180ms ease-out forwards;
+}
+
+@keyframes screenFadeSlide {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
